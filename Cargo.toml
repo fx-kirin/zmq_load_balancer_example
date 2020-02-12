@@ -1,0 +1,20 @@
+[package]
+name = "zmq_load_balancer_example"
+version = "0.1.0"
+authors = ["fx_kirin <fx.kirin@gmail.com>"]
+edition = "2018"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+tokio-zmq = "0.10.1"
+zmq = "0.9.2"
+futures01 = "0.1.29"
+futures = {version = "0.3.1", features = ["compat"]}
+tokio = { version = "0.2.2", features = ["full"] }
+crossbeam = "0.7.3"
+log = "0.4.8"
+log4rs = {git="https://github.com/sfackler/log4rs"}
+
+[build-dependencies]
+fs_extra = "1.1.0"

@@ -1,0 +1,30 @@
+refresh_rate: 30 seconds
+appenders:
+  stdout:
+    kind: console
+    encoder:
+      pattern: "{h([{l:0.1}|{d(%y%m%d %H:%M:%S)}|{P}|{t}|{T}:{M}:{f}:{L}])} {m}{n}"
+  position_manager:
+    kind: file
+    path: "log/{{cookiecutter.package_name}}.log"
+    encoder:
+      pattern: "[{l:0.1}|{d(%y%m%d %H:%M:%S)}|{P}|{t}|{T}:{M}:{f}:{L}] {m}{n}"
+root:
+  level: debug
+  appenders:
+    - stdout
+loggers:
+  position_manager:
+    level: debug
+    appenders:
+      - stdout
+      - position_manager
+    additive: false
+  test_lib:
+    level: debug
+    appenders:
+      - stdout
+      - position_manager
+    additive: false
+  tokio_reactor:
+    level: debug
