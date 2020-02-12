@@ -1,4 +1,3 @@
-use crossbeam::channel::unbounded;
 use futures::compat::{Future01CompatExt, Sink01CompatExt};
 use futures::prelude::*;
 use futures::try_join;
@@ -6,7 +5,7 @@ use log::{debug, error, info, trace, warn};
 use std::env;
 use std::{fmt, sync::Arc};
 use tokio_zmq::{prelude::*, Multipart, Router};
-
+use tokio::sync::mpsc;
 
 /* --------------------------------Envelope---------------------------------- */
 
@@ -96,13 +95,13 @@ async fn broker_task() {
     let (mut frontend_sink, mut frontend_stream) = frontend.sink_stream(25).sink_compat().split();
     let (mut backend_sink, mut backend_stream) = backend.sink_stream(25).sink_compat().split();
 
-    let (s, r) = unbounded::<zmq::Message>();
+    let (mut sender, mut receiver) = futures::channel::mpsc::unbounded::<zmq::Message>();
 
     let front2back = async move {
         while let Some(multipart) = frontend_stream.next().await {
             let mut multipart = multipart.unwrap();
             debug!("Received {:?}", multipart);
-            let worker_id = r.recv().unwrap();
+            let worker_id = receiver.next().await.unwrap();
             debug!("Work with {:?}", worker_id);
             let client_id = multipart
                 .pop_front()
@@ -146,7 +145,7 @@ async fn broker_task() {
 
             assert!(empty.is_empty());
             debug!("Sent worker_id {:?}", worker_id);
-            s.send(worker_id).unwrap();
+            sender.send(worker_id).await.unwrap();
             if &*body != b"READY" {
                 let client_id = body;
                 let result = multipart
